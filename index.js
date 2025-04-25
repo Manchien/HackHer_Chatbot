@@ -17,8 +17,8 @@ app.use(bodyParser.json());
 
 // 設定 AWS IAM 憑證
 AWS.config.update({
-  accessKeyId: "AKIAV3HS5Z4VCOWNBMMH",
-  secretAccessKey: "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",
+  accessKeyId: "",
+  secretAccessKey: "",
   region: "us-west-2",
 });
 

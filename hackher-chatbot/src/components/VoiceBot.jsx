@@ -4,12 +4,19 @@ import happyAnimation from "../animations/happy.json";
 import sadAnimation from "../animations/sad.json";
 import neutralAnimation from "../animations/neutral.json";
 
+// AWS SDK 引入
+import { TranscribeStreamingClient, StartStreamTranscriptionCommand } from "@aws-sdk/client-transcribe-streaming";
+
+// IAM 認證資訊 (注意：不要在公開的客戶端代碼中暴露這些憑證)
+const accessKeyId = "";
+const secretAccessKey = "";
+const region = "us-west-2";  // 替換為你的 AWS 地區
+
 export default function VoiceBot() {
   const [emotion, setEmotion] = useState("neutral");
-  const [transcript, setTranscript] = useState("");
-  const [listening, setListening] = useState(false);
-  const recognitionRef = useRef(null);
-  const transcriptRef = useRef(""); // 用來儲存語音辨識過程中的所有文字
+  const [transcript, setTranscript] = useState(""); // 新增語音文字
+  const [listening, setListening] = useState(false); // 語音辨識狀態
+  const recognitionRef = useRef(null); // 語音辨識元件
 
   const animations = {
     happy: happyAnimation,
@@ -17,6 +24,16 @@ export default function VoiceBot() {
     neutral: neutralAnimation,
   };
 
+  // AWS Transcribe 服務設定
+  const client = new TranscribeStreamingClient({
+    region,
+    credentials: {
+      accessKeyId,
+      secretAccessKey,
+    },
+  });
+
+  // 開始語音辨識
   const startListening = async () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -25,65 +42,72 @@ export default function VoiceBot() {
     }
 
     const recognition = new SpeechRecognition();
-    recognition.lang = "zh-TW";
+    recognition.lang = "zh-TW"; // 你可以更改為其他語言
     recognition.interimResults = true;
     recognition.continuous = true;
 
-    recognition.onstart = () => setListening(true);
-    recognition.onend = () => {
-      setListening(false);
-      handleUpload(); // 當結束錄音時，上傳資料
-    };
+    recognition.onstart = () => setListening(true); // 開始語音辨識
+    recognition.onend = () => setListening(false);  // 結束語音辨識
 
-    recognition.onresult = (event) => {
+    recognition.onresult = async (event) => {
       const text = event.results[0][0].transcript;
-      console.log("語音辨識結果：", text);
+      console.log("語音辨識結果：", text); // 印出語音辨識結果
 
-      // 將所有的語音辨識結果累加
-      transcriptRef.current = event.results[0][0].transcript;
-
+      // 顯示空字串時顯示 "空的"
       if (text.trim() === "") {
         setTranscript("空的");
       } else {
-        setTranscript(transcriptRef.current);
+        setTranscript(text);
       }
 
       // 情緒判斷邏輯
       if (text.includes("開心") || text.includes("快樂")) setEmotion("happy");
       else if (text.includes("難過") || text.includes("不爽")) setEmotion("sad");
       else setEmotion("neutral");
+
+      // 使用 AWS Transcribe 的 Streaming API
+      const params = {
+        LanguageCode: "zh-TW", // 設定語言
+        MediaSampleRateHertz: 16000,
+        MediaEncoding: "pcm", // 設定音頻格式
+        AudioStream: new ReadableStream({
+          start(controller) {
+            const reader = new FileReader();
+            reader.onload = () => {
+              controller.enqueue(reader.result); // 將音訊流傳送給 AWS Transcribe
+            };
+            reader.readAsArrayBuffer(event.results[0][0].audio);
+          }
+        })
+      };
+
+      try {
+        // 發送語音流至 Transcribe
+        const command = new StartStreamTranscriptionCommand(params);
+        const response = await client.send(command);
+        console.log("Transcribe Response: ", response);
+      } catch (error) {
+        console.error("Transcribe Error: ", error);
+      }
     };
 
     recognitionRef.current = recognition;
     recognition.start();
   };
 
+  // 停止語音辨識
   const stopListening = () => {
     if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      setListening(false);
-    }
-  };
-
-  // 上傳語音辨識結果
-  const handleUpload = async () => {
-    try {
-      const response = await fetch("http://localhost:3001/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: transcriptRef.current }),
-      });
-      const data = await response.json();
-      console.log("儲存成功：", data);
-    } catch (error) {
-      console.error("上傳錯誤", error);
+      recognitionRef.current.stop();  // 停止語音辨識
+      setListening(false);  // 更新狀態為停止
     }
   };
 
   return (
     <div className="flex flex-col items-center gap-4">
       <Lottie animationData={animations[emotion]} style={{ height: 200 }} />
-
+      
+      {/* 語音輸入按鈕 */}
       <button
         onClick={listening ? stopListening : startListening}
         className="bg-purple-400 text-white px-4 py-2 rounded"
@@ -91,6 +115,7 @@ export default function VoiceBot() {
         🎤 {listening ? "結束語音輸入" : "開始語音輸入"}
       </button>
 
+      {/* 顯示語音辨識結果 */}
       <p className="mt-2 text-lg text-gray-700">📝 {transcript}</p>
 
       <div className="flex gap-2">
