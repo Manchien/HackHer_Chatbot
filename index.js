@@ -90,7 +90,7 @@ app.post("/chat", async (req, res) => {
   const userInput = req.body.prompt;
   chatHistory.push({ role: "user", content: userInput });
 
-  const refinedUserInput = `\n\n請用簡短（50字內）、專業且人性化的方式回答。回答時避免冗長與過多解釋。`;
+  const refinedUserInput = `\n\n請用簡短（50字內）、專業且人性化的方式回答。回答時避免冗長與過多解釋，不准講"作為一個人工智能助手"。`;
   chatHistory.push({ role: "user", content: refinedUserInput });
 
   const input = {

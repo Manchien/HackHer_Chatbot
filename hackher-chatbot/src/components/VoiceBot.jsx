@@ -3,6 +3,9 @@ import Lottie from "lottie-react";
 import happyAnimation from "../animations/happy.json";
 import sadAnimation from "../animations/sad.json";
 import neutralAnimation from "../animations/neutral.json";
+import talkAnimation from "../animations/talk.json";
+import thinkAnimation from "../animations/think.json";
+import angryAnimation from "../animations/angry.json";
 
 let silenceTimer = null;
 let restartTimer = null;
@@ -21,6 +24,9 @@ export default function VoiceBot() {
     happy: happyAnimation,
     sad: sadAnimation,
     neutral: neutralAnimation,
+    talk: talkAnimation,
+    think: thinkAnimation,
+    angry:angryAnimation,
   };
 
   const startListening = () => {
@@ -33,9 +39,9 @@ export default function VoiceBot() {
     const recognition = new SpeechRecognition();
     recognition.lang = "zh-TW";
     recognition.interimResults = false;
-    recognition.continuous = false;
+    recognition.continuous = true;
 
-    recognition.onstart = () => setListening(true);
+    // recognition.onstart = () => setListening(true);
 
     recognition.onresult = async (event) => {
       const text = event.results[0][0].transcript.trim();
@@ -48,6 +54,7 @@ export default function VoiceBot() {
       if (lowerSpeech.includes("等一下") || lowerSpeech.includes("暫停")) {
         stopPolly();
         setTranscript("⏸️ 暫停播放");
+        setEmotion("angry");
         startListening();
         return; // 不繼續後面的送出流程
       }
@@ -93,7 +100,9 @@ export default function VoiceBot() {
       }
       
       // 如果啟動了，正常流程
+      
       setTranscript(text);
+      
 
       // 情緒判斷
       if (text.includes("開心") || text.includes("快樂")) setEmotion("happy");
@@ -134,14 +143,14 @@ export default function VoiceBot() {
     recognition.start();
   };
 
-  const stopListening = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      clearTimeout(silenceTimer);
-      clearTimeout(restartTimer);
-      setListening(false);
-    }
-  };
+  // const stopListening = () => {
+  //   if (recognitionRef.current) {
+  //     recognitionRef.current.stop();
+  //     clearTimeout(silenceTimer);
+  //     clearTimeout(restartTimer);
+  //     setListening(false);
+  //   }
+  // };
 
   const handleUpload = async () => {
     try {
@@ -165,7 +174,7 @@ export default function VoiceBot() {
     });
     const data = await res.json();
     const replyText = data.text;
-
+    setEmotion("talk");
     console.log("🤖 Claude 回應：", replyText);
 
     await playPolly(replyText);
@@ -219,7 +228,7 @@ const stopPolly = () => {
   useEffect(() => {
     startListening();
     return () => {
-      stopListening();
+      // stopListening();
     };
   }, []);
 
