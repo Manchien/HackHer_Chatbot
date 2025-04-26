@@ -33,7 +33,7 @@ export default function VoiceBot() {
     recognition.onstart = () => setListening(true);
     recognition.onend = async () => {
       setListening(false);
-      await handleUpload(); // 上傳語音結果
+      // await handleUpload(); // 上傳語音結果
       const response = await sendMessageToBedrock(transcriptRef.current); // 傳給 Claude
       console.log("Bedrock 回應：", response);
       setAiReply(response); // 顯示 AI 回覆
