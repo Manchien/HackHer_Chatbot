@@ -20,51 +20,51 @@ export default function VoiceBot() {
   };
 
   const startListening = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("此瀏覽器不支援語音辨識 😢");
-      return;
-    }
-  
-    const recognition = new SpeechRecognition();
-    recognition.lang = "zh-TW";
-    recognition.interimResults = false;  // 改這裡
-    recognition.continuous = false;      // 改這裡，說完就停 → 方便觸發處理邏輯
-  
-    recognition.onstart = () => setListening(true);
-  
-    recognition.onresult = async (event) => {
-      const text = event.results[0][0].transcript;
-      transcriptRef.current = text;
-      setTranscript(text);
-  
-      // 情緒判斷
-      if (text.includes("開心") || text.includes("快樂")) setEmotion("happy");
-      else if (text.includes("難過") || text.includes("不爽")) setEmotion("sad");
-      else setEmotion("neutral");
-  
-      // 傳給 Claude
-      const response = await sendMessageToBedrock(text);
-      setAiReply(response);
-  
-      // Claude 回答完再重新啟動語音辨識
-      setTimeout(() => {
-        startListening();
-      }, 500);
-    };
-  
-    recognition.onerror = (e) => {
-      console.error("❌ 語音錯誤", e);
-      setListening(false);
-    };
-  
-    recognition.onend = () => {
-      setListening(false);  // 等 result 結束後會自動再開始
-    };
-  
-    recognitionRef.current = recognition;
-    recognition.start();
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert("此瀏覽器不支援語音辨識 😢");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = "zh-TW";
+  recognition.interimResults = false;  // 改這裡
+  recognition.continuous = false;      // 改這裡，說完就停 → 方便觸發處理邏輯
+
+  recognition.onstart = () => setListening(true);
+
+  recognition.onresult = async (event) => {
+    const text = event.results[0][0].transcript;
+    transcriptRef.current = text;
+    setTranscript(text);
+
+    // 情緒判斷
+    if (text.includes("開心") || text.includes("快樂")) setEmotion("happy");
+    else if (text.includes("難過") || text.includes("不爽")) setEmotion("sad");
+    else setEmotion("neutral");
+
+    // 傳給 Claude
+    const response = await sendMessageToBedrock(text);
+    setAiReply(response);
+
+    // Claude 回答完再重新啟動語音辨識
+    setTimeout(() => {
+      startListening();
+    }, 500);
   };
+
+  recognition.onerror = (e) => {
+    console.error("❌ 語音錯誤", e);
+    setListening(false);
+  };
+
+  recognition.onend = () => {
+    setListening(false);  // 等 result 結束後會自動再開始
+  };
+
+  recognitionRef.current = recognition;
+  recognition.start();
+};
 
   const stopListening = () => {
     if (recognitionRef.current) {
@@ -90,14 +90,40 @@ export default function VoiceBot() {
   };
 
   const sendMessageToBedrock = async (message) => {
-    const res = await fetch("http://localhost:3001/chat", {
+  const res = await fetch("http://localhost:3001/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt: message }),
+  });
+  const data = await res.json();
+  const replyText = data.text;
+
+  console.log("🤖 Claude 回應：", replyText);
+
+  // 👉 呼叫 Polly
+  await playPolly(replyText);
+
+  return replyText;
+};
+
+const playPolly = async (text) => {
+  try {
+    const res = await fetch("http://localhost:3001/polly", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: message }),
+      body: JSON.stringify({ text }),
     });
-    const data = await res.json();
-    return data.text;
-  };
+    const audioBlob = await res.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+
+    const audio = new Audio(audioUrl);
+    audio.play();
+    console.log("🔊 Polly 播放中...");
+  } catch (error) {
+    console.error("Polly 播放失敗：", error);
+  }
+};
+
 
   return (
     <div className="flex flex-col items-center gap-4 p-4 max-w-lg mx-auto">

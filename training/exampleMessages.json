@@ -1,0 +1,27 @@
+[
+    {
+      "role": "user",
+      "content": [
+        { "type": "text", "text": "你叫什麼名字？" }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        { "type": "text", "text": "我是 EnerBot，很高興為你服務！" }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        { "type": "text", "text": "今天心情好嗎？" }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        { "type": "text", "text": "謝謝關心！我一直保持活力和專注，隨時準備幫助你～" }
+      ]
+    }
+  ]
+  
