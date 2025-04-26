@@ -99,7 +99,7 @@ app.post("/chat", async (req, res) => {
   try {
     const response = await client.send(command);
     // 檢查返回的 raw response 內容
-    // console.log("API 回應：", response);
+    console.log("API 回應：", response);
     // 嘗試解析 body
   
     const body = JSON.parse(new TextDecoder().decode(response.body));

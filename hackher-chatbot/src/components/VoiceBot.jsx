@@ -3,7 +3,8 @@ import Lottie from "lottie-react";
 import happyAnimation from "../animations/happy.json";
 import sadAnimation from "../animations/sad.json";
 import neutralAnimation from "../animations/neutral.json";
-
+let silenceTimer = null; // 靜音計時器
+let restartTimer = null;
 export default function VoiceBot() {
   const [emotion, setEmotion] = useState("neutral");
   const [transcript, setTranscript] = useState("");
@@ -24,33 +25,43 @@ export default function VoiceBot() {
       alert("此瀏覽器不支援語音辨識 😢");
       return;
     }
-
+  
     const recognition = new SpeechRecognition();
     recognition.lang = "zh-TW";
-    recognition.interimResults = true;
-    recognition.continuous = true;
-
+    recognition.interimResults = false;  // 改這裡
+    recognition.continuous = false;      // 改這裡，說完就停 → 方便觸發處理邏輯
+  
     recognition.onstart = () => setListening(true);
-    recognition.onend = async () => {
-      setListening(false);
-      // await handleUpload(); // 上傳語音結果
-      const response = await sendMessageToBedrock(transcriptRef.current); // 傳給 Claude
-      console.log("Bedrock 回應：", response);
-      setAiReply(response); // 顯示 AI 回覆
-    };
-
-    recognition.onresult = (event) => {
+  
+    recognition.onresult = async (event) => {
       const text = event.results[0][0].transcript;
       transcriptRef.current = text;
-
-      setTranscript(text.trim() === "" ? "空的" : text);
-
+      setTranscript(text);
+  
       // 情緒判斷
       if (text.includes("開心") || text.includes("快樂")) setEmotion("happy");
       else if (text.includes("難過") || text.includes("不爽")) setEmotion("sad");
       else setEmotion("neutral");
+  
+      // 傳給 Claude
+      const response = await sendMessageToBedrock(text);
+      setAiReply(response);
+  
+      // Claude 回答完再重新啟動語音辨識
+      setTimeout(() => {
+        startListening();
+      }, 500);
     };
-
+  
+    recognition.onerror = (e) => {
+      console.error("❌ 語音錯誤", e);
+      setListening(false);
+    };
+  
+    recognition.onend = () => {
+      setListening(false);  // 等 result 結束後會自動再開始
+    };
+  
     recognitionRef.current = recognition;
     recognition.start();
   };
@@ -58,6 +69,8 @@ export default function VoiceBot() {
   const stopListening = () => {
     if (recognitionRef.current) {
       recognitionRef.current.stop();
+      clearTimeout(silenceTimer);
+      clearTimeout(restartTimer);
       setListening(false);
     }
   };
