@@ -6,6 +6,7 @@ import neutralAnimation from "../animations/neutral.json";
 
 // AWS SDK 引入
 import { TranscribeStreamingClient, StartStreamTranscriptionCommand } from "@aws-sdk/client-transcribe-streaming";
+// require("dotenv").config(); // 一定要最上面就引入
 
 // IAM 認證資訊 (注意：不要在公開的客戶端代碼中暴露這些憑證)
 const accessKeyId = "";
@@ -103,6 +104,8 @@ export default function VoiceBot() {
     }
   };
 
+  
+  
   return (
     <div className="flex flex-col items-center gap-4">
       <Lottie animationData={animations[emotion]} style={{ height: 200 }} />
