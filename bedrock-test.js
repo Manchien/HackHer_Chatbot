@@ -4,13 +4,13 @@
 //     InvokeModelCommand,
 //   } = require("@aws-sdk/client-bedrock-runtime");
   
-// //   const client = new BedrockRuntimeClient({
-// //     region: "us-west-2",
-// //     credentials: {
-// //       accessKeyId: "你的ACCESS_KEY",      // <-- 記得替換
-// //       secretAccessKey: "你的SECRET_KEY",  // <-- 記得替換
-// //     },
-// //   });
+//   const client = new BedrockRuntimeClient({
+//     region: "us-west-2",
+//     credentials: {
+//       accessKeyId: "你的ACCESS_KEY",      // <-- 記得替換
+//       secretAccessKey: "你的SECRET_KEY",  // <-- 記得替換
+//     },
+//   });
   
 //   async function main() {
 //     const input = {
@@ -23,7 +23,7 @@
 //     };
   
 //     const command = new InvokeModelCommand({
-//       modelId: "anthropic.claude-3-haiku-20240307-v1:0",
+//       modelId: "anthropic.claude-v2:1-nova",
 //       contentType: "application/json",
 //       accept: "application/json",
 //       body: JSON.stringify(input),
