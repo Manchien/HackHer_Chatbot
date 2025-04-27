@@ -244,12 +244,12 @@ const stopPolly = () => {
       </button> */}
 
       <div className="mt-4 w-full bg-gray-100 p-4 rounded shadow text-left">
-        <p className="text-sm text-gray-500">🎙️ 語音輸入：</p>
+        {/* <p className="text-sm text-gray-500">🎙️ 語音輸入：</p> */}
         <p className="text-lg text-gray-800">{transcript}</p>
       </div>
 
       <div className="w-full bg-white p-4 rounded shadow text-left">
-        <p className="text-sm text-gray-500">🤖 AI 回應：</p>
+        {/* <p className="text-sm text-gray-500">🤖 AI 回應：</p> */}
         <p className="text-lg text-green-700">{aiReply}</p>
       </div>
     </div>
