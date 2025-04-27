@@ -37,7 +37,7 @@ npm rum dev
 node index.js
 ```
 
-* 本機執行： http://localhost:80/
+* 本機執行： http://localhost:5173/
 
 ### 使用事項：
 
