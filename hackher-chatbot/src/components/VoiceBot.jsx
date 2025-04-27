@@ -60,7 +60,7 @@ export default function VoiceBot() {
       }
 
       // 👉 判斷是否啟動或結束
-      if (text.toLowerCase() === "啟動對話模式") {
+      if (text.toLowerCase() === "energy啟動對話模式") {
         console.log("⚡ Energy Power Up - 啟動對話模式");
         
         // setActivated(true);
@@ -124,7 +124,7 @@ export default function VoiceBot() {
     };
 
     recognition.onerror = (e) => {
-      console.error("❌ 語音錯誤", e);
+      console.error("語音錯誤(可忽略)，未偵測到說話", e);
       setListening(false);
     
       if (e.error === "no-speech") {
