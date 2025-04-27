@@ -77,7 +77,7 @@ export default function VoiceBot() {
      }
     
 
-      if (text.toLowerCase() === "energy結束對話模式") {
+      if (text.toLowerCase() === "energy結束對話模式" || text.toLowerCase() === "結束對話模式") {
         // setActivated(false);
         // activatedRef.current = false;
         // console.log("2activatedRef.current", activatedRef.current);
@@ -243,7 +243,7 @@ const stopPolly = () => {
         🎤 {listening ? "結束語音輸入" : "開始語音輸入"}
       </button> */}
 
-      <div className="mt-4 w-full bg-gray-100 p-4 rounded shadow text-left">
+      <div className="mt-4 w-full  p-4 rounded shadow text-left">
         {/* <p className="text-sm text-gray-500">🎙️ 語音輸入：</p> */}
         <p className="text-lg text-gray-800">{transcript}</p>
       </div>
