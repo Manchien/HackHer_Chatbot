@@ -77,7 +77,7 @@ export default function VoiceBot() {
      }
     
 
-      if (text.toLowerCase() === "Energy結束對話模式") {
+      if (text.toLowerCase() === "energy結束對話模式") {
         // setActivated(false);
         // activatedRef.current = false;
         // console.log("2activatedRef.current", activatedRef.current);
